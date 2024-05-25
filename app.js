@@ -1,12 +1,27 @@
 const express = require('express');
+const dotnev = require('dotenv');
 const morgan = require('morgan');
+const mongoose = require('mongoose');
 const userRouter = require('./routes/userRoute');
 const tourRouter = require('./routes/tourRoute');
+
+dotnev.config({ path: './config.env' });
+
+const db = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
+
+mongoose
+    .connect(db, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+    })
+    .then(() => console.log('DB connection successful!'));
 
 const app = express();
 
 // Middleware
-app.use(morgan('dev'));
+if (process.env.NODE_ENV === 'development') {
+    app.use(morgan('dev'));
+}
 app.use(express.json());
 
 // Routes
