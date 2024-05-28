@@ -5,7 +5,9 @@
     "main": "app.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "start": "nodemon server.js"
+        "start": "nodemon server.js",
+        "import-data": "node ./dev-data/data/import-sample-data.js --import",
+        "delete-data": "node ./dev-data/data/delete-sample-data.js --delete"
     },
     "author": "Phuc Nguyen",
     "license": "ISC",
