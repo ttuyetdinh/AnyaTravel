@@ -1,6 +1,14 @@
 const fs = require('fs');
 const Tour = require('../models/tourModel');
 
+exports.aliasTopTours = (req, res, next) => {
+    // middleware
+    req.query.limit = '5';
+    req.query.sort = '-ratingsAverage,price';
+    req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
+    next(); // call the next action
+};
+
 exports.getTour = async (req, res) => {
     try {
         const tour = await Tour.findById(req.params.id);
