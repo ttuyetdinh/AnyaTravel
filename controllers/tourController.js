@@ -149,7 +149,7 @@ exports.getAllTours = async (req, res) => {
 
 exports.createTour = async (req, res) => {
     try {
-        const newTour = await Tour.create(req.body);
+        const newTour = await Tour.create(req.body); // validator for create is enabled by default
 
         res.status(201).json({
             status: 'success',
@@ -169,7 +169,7 @@ exports.updateTour = async (req, res) => {
     try {
         const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
-            runValidators: true,
+            runValidators: true, // validator for update is disabled by default
         });
 
         res.status(200).json({
