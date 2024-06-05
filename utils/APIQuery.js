@@ -49,4 +49,4 @@ class APIQuery {
     }
 }
 
-exports.APIQuery = APIQuery;
+module.exports = APIQuery;

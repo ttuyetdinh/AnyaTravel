@@ -1,7 +1,8 @@
 const fs = require('fs');
 const Tour = require('../models/tourModel');
-const { APIQuery } = require('../utils/APIQuery');
-const { wrapperAsync } = require('../utils/wrapperAsync');
+const APIQuery = require('../utils/APIQuery');
+const wrapperAsync = require('../utils/wrapperAsync');
+const AppError = require('../utils/appError');
 
 exports.aliasTopTours = (req, res, next) => {
     // middleware
@@ -95,8 +96,12 @@ exports.getMonthlyPlan = wrapperAsync(async (req, res) => {
     });
 });
 
-exports.getTour = wrapperAsync(async (req, res) => {
+exports.getTour = wrapperAsync(async (req, res, next) => {
     const tour = await Tour.findById(req.params.id);
+
+    if (!tour) {
+        return next(new AppError('No tour found with that ID', 404));
+    }
 
     res.status(200).json({
         status: 'success',
@@ -131,11 +136,15 @@ exports.createTour = wrapperAsync(async (req, res) => {
     });
 });
 
-exports.updateTour = wrapperAsync(async (req, res) => {
+exports.updateTour = wrapperAsync(async (req, res, next) => {
     const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
         new: true,
         runValidators: true, // validator for update is disabled by default
     });
+
+    if (!tour) {
+        return next(new AppError('No tour found with that ID', 404));
+    }
 
     res.status(200).json({
         status: 'success',
@@ -145,8 +154,12 @@ exports.updateTour = wrapperAsync(async (req, res) => {
     });
 });
 
-exports.deleteTour = wrapperAsync(async (req, res) => {
-    await Tour.findByIdAndDelete(req.params.id);
+exports.deleteTour = wrapperAsync(async (req, res, next) => {
+    const tour = await Tour.findByIdAndDelete(req.params.id);
+
+    if (!tour) {
+        return next(new AppError('No tour found with that ID', 404));
+    }
 
     res.status(204).json({
         status: 'success',

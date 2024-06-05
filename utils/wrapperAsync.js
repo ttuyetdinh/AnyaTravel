@@ -1,5 +1,5 @@
 //  a wrapper to wrap the async function and catch the error for Express middleware
-exports.wrapperAsync =
+module.exports = wrapperAsync =
     (fn) =>
     (...args) => {
         const func = fn(...args);
