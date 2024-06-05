@@ -1,17 +1,9 @@
 const express = require('express');
-const dotnev = require('dotenv');
 const morgan = require('morgan');
-const mongoose = require('mongoose');
 const AppError = require('./utils/appError');
 const userRouter = require('./routes/userRoute');
 const tourRouter = require('./routes/tourRoute');
 const { globalErrorHandler } = require('./controllers/errorController');
-
-dotnev.config({ path: './config.env' });
-
-const db = process.env.DATABASE.replace('<PASSWORD>', process.env.DATABASE_PASSWORD);
-
-mongoose.connect(db).then(() => console.log('DB connection successful!'));
 
 const app = express();
 
