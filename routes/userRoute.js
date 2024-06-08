@@ -10,6 +10,10 @@ router.post('/login', authController.login);
 // user data routes
 router.route('/').get(userController.getAllUsers).post(userController.createUser);
 
-router.route('/:id').get(userController.getUser).patch(userController.updateUser).delete(userController.deleteUser);
+router
+    .route('/:id')
+    .get(userController.getUser)
+    .patch(userController.updateUser)
+    .delete(authController.authorize, authController.restrictTo(['admin', 'subAdmin']), userController.deleteUser);
 
 module.exports = router;

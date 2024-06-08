@@ -67,6 +67,16 @@ exports.authorize = wrapperAsync(async (req, res, next) => {
     next();
 });
 
+// middleware to restrict access to certain roles
+exports.restrictTo = (...roles) => {
+    return (req, res, next) => {
+        if (!roles.includes(req.user.role)) {
+            return next(new AppError('You do not have permission to perform this action', 403));
+        }
+        next();
+    };
+};
+
 function signToken(id) {
     return jwt.sign({ id: id }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRES_IN,
