@@ -1,11 +1,16 @@
-exports.getAllUsers = (req, res) => {
+const User = require('../models/userModel');
+const wrapperAsync = require('../utils/wrapperAsync');
+
+exports.getAllUsers = wrapperAsync(async (req, res) => {
+    const users = await User.find();
+
     res.status(200).json({
         status: 'success',
         data: {
-            user: 'will return list of users',
+            users: users,
         },
     });
-};
+});
 
 exports.createUser = (req, res) => {
     res.status(200).json({

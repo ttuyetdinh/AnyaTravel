@@ -1,3 +1,5 @@
+const AppError = require('../utils/appError');
+
 const sendErrorDev = (err, res) => {
     res.status(err.statusCode).json({
         status: err.status,
@@ -41,6 +43,11 @@ const handleValidationErrorDB = (err) => {
     return new AppError(message, 400);
 };
 
+const handleJWTError = () => new AppError('Invalid token. Please log in again!', 401);
+
+const handleJWTExpiredError = () => new AppError('Your token has expired! Please log in again.', 401);
+
+// Express error handling middleware has 4 parameters, if not express will not recognize it as an error handling middleware
 exports.globalErrorHandler = (err, req, res, next) => {
     // custom error handler that overrides the default error handler
     err.statusCode = err.statusCode || 500;
@@ -49,7 +56,7 @@ exports.globalErrorHandler = (err, req, res, next) => {
     if (process.env.NODE_ENV === 'development') {
         sendErrorDev(err, res);
     } else if (process.env.NODE_ENV === 'production') {
-        let error = { ...err };
+        let error = { ...err, message: err.message, stack: err.stack };
 
         // handle wrong format when casting
         if (error.name === 'CastError') {
@@ -63,6 +70,15 @@ exports.globalErrorHandler = (err, req, res, next) => {
         if (error.name === 'ValidationError') {
             error = handleValidationErrorDB(error);
         }
-        sendErrorProd(err, res);
+        // handle JWT errors
+        if (error.name === 'JsonWebTokenError') {
+            error = handleJWTError();
+        }
+        // handle JWT expired errors
+        if (error.name === 'TokenExpiredError') {
+            error = handleJWTExpiredError();
+        }
+
+        sendErrorProd(error, res);
     }
 };
