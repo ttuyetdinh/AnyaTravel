@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const User = require('../models/userModel');
 const AppError = require('../utils/appError');
 const wrapperAsync = require('../utils/wrapperAsync');
@@ -78,7 +79,32 @@ exports.forgotPassword = wrapperAsync(async (req, res) => {
         return next(new AppError('There was an error sending the email. Try again later!', 500));
     }
 });
-exports.resetPassword = wrapperAsync(async (req, res) => {});
+exports.resetPassword = wrapperAsync(async (req, res, next) => {
+    const reqToken = req.params.token;
+    const hashedToken = crypto.createHash('sha256').update(reqToken).digest('hex');
+
+    // get user from token
+    const user = await User.findOne({ passwordResetToken: hashedToken, passwordResetExpires: { $gt: Date.now() } });
+
+    if (!user) {
+        return next(new AppError('Token is invalid or has expired', 400));
+    }
+
+    // update changedPasswordAt property for the user
+    user.password = req.body.password;
+    user.passwordConfirm = req.body.passwordConfirm;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+
+    // log the user in, create and send new JWT
+    const jwtToken = signToken(user._id);
+
+    res.status(200).json({
+        status: 'success',
+        token: jwtToken,
+    });
+});
 
 // middleware to authorize the user
 exports.authorize = wrapperAsync(async (req, res, next) => {

@@ -57,6 +57,13 @@ userSchema.pre('save', async function (next) {
     }
     next();
 });
+// db middleware to update the passwordChangedAt property when the password is changed
+userSchema.pre('save', function (next) {
+    if (this.isModified('password') && !this.isNew) {
+        this.passwordChangedAt = Date.now() - 1000; // 1 second before the token was issued
+    }
+    next();
+});
 
 // user schema method: compare the user input password with the hashed password in the database
 userSchema.methods.correctPassword = async function (candidatePassword, hashedPassword) {

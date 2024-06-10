@@ -56,7 +56,7 @@ exports.globalErrorHandler = (err, req, res, next) => {
     if (process.env.NODE_ENV === 'development') {
         sendErrorDev(err, res);
     } else if (process.env.NODE_ENV === 'production') {
-        let error = { ...err, message: err.message, stack: err.stack };
+        let error = { ...err, message: err.message, stack: err.stack, name: err.name };
 
         // handle wrong format when casting
         if (error.name === 'CastError') {
