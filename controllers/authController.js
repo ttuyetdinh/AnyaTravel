@@ -44,6 +44,7 @@ exports.login = wrapperAsync(async (req, res, next) => {
 });
 
 exports.logout = wrapperAsync(async (req, res) => {});
+
 exports.forgotPassword = wrapperAsync(async (req, res) => {
     // get user based on input email
     const user = await User.findOne({ email: req.body.email });
@@ -79,6 +80,7 @@ exports.forgotPassword = wrapperAsync(async (req, res) => {
         return next(new AppError('There was an error sending the email. Try again later!', 500));
     }
 });
+
 exports.resetPassword = wrapperAsync(async (req, res, next) => {
     const reqToken = req.params.token;
     const hashedToken = crypto.createHash('sha256').update(reqToken).digest('hex');
@@ -103,6 +105,32 @@ exports.resetPassword = wrapperAsync(async (req, res, next) => {
     res.status(200).json({
         status: 'success',
         token: jwtToken,
+    });
+});
+
+exports.updatePassword = wrapperAsync(async (req, res, next) => {
+    // get user from collection
+    const user = await User.findById(req.user.id).select('+password');
+
+    if (!user) {
+        return next(new AppError('User not found', 404));
+    }
+
+    // check if posted current password is correct
+    if (!(await user.correctPassword(req.body.currentPassword, user.password))) {
+        return next(new AppError('Your current password is wrong', 401));
+    }
+
+    user.password = req.body.newPassword;
+    user.passwordConfirm = req.body.newPasswordConfirm;
+    await user.save();
+
+    // log user in, send JWT
+    const token = signToken(user._id);
+
+    res.status(200).json({
+        status: 'success',
+        token: token,
     });
 });
 
