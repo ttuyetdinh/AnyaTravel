@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
+        minLength: [3, 'Name must have at least 3 characters'],
     },
     photo: {
         type: String,
@@ -46,6 +47,11 @@ const userSchema = new mongoose.Schema({
     },
     passwordResetExpires: {
         type: Date,
+    },
+    active: {
+        type: Boolean,
+        default: true,
+        select: false,
     },
 });
 

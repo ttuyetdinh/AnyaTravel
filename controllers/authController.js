@@ -8,14 +8,14 @@ const sendEmail = require('../utils/emailSender');
 exports.signup = wrapperAsync(async (req, res) => {
     const newUser = await User.create(req.body);
 
+    // log user in, send JWT, set cookie
     const token = signToken(newUser._id);
+    const option = jwtCookieOption();
 
-    res.status(201).json({
+    res.cookie('jwt', token, option);
+    res.status(200).json({
         status: 'success',
         token: token,
-        data: {
-            user: newUser,
-        },
     });
 });
 
@@ -34,16 +34,25 @@ exports.login = wrapperAsync(async (req, res, next) => {
         return next(new AppError('Incorrect email or password', 400));
     }
 
-    // Create token
+    // log user in, send JWT, set cookie
     const token = signToken(user._id);
+    const option = jwtCookieOption();
 
+    res.cookie('jwt', token, option);
     res.status(200).json({
         status: 'success',
         token: token,
+        user: user,
     });
 });
 
-exports.logout = wrapperAsync(async (req, res) => {});
+exports.logout = wrapperAsync(async (req, res) => {
+    res.clearCookie('jwt');
+
+    res.status(200).json({
+        status: 'success',
+    });
+});
 
 exports.forgotPassword = wrapperAsync(async (req, res) => {
     // get user based on input email
@@ -99,12 +108,14 @@ exports.resetPassword = wrapperAsync(async (req, res, next) => {
     user.passwordResetExpires = undefined;
     await user.save();
 
-    // log the user in, create and send new JWT
-    const jwtToken = signToken(user._id);
+    // log user in, send JWT, set cookie
+    const token = signToken(user._id);
+    const option = jwtCookieOption();
 
+    res.cookie('jwt', token, option);
     res.status(200).json({
         status: 'success',
-        token: jwtToken,
+        token: token,
     });
 });
 
@@ -125,9 +136,11 @@ exports.updatePassword = wrapperAsync(async (req, res, next) => {
     user.passwordConfirm = req.body.newPasswordConfirm;
     await user.save();
 
-    // log user in, send JWT
+    // log user in, send JWT, set cookie
     const token = signToken(user._id);
+    const option = jwtCookieOption();
 
+    res.cookie('jwt', token, option);
     res.status(200).json({
         status: 'success',
         token: token,
@@ -174,6 +187,14 @@ function signToken(id) {
     return jwt.sign({ id: id }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRES_IN,
     });
+}
+
+function jwtCookieOption() {
+    return {
+        expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
+        secure: true,
+        httpOnly: process.env.NODE_ENV === 'production' ? true : false,
+    };
 }
 
 // ----------------------- Different approach -----------------------//

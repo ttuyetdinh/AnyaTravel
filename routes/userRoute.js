@@ -11,9 +11,13 @@ router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);
 router.patch('/updatePassword', authController.authorize, authController.updatePassword);
 
-// user data routes
-router.route('/').get(userController.getAllUsers).post(userController.createUser);
+//user data routes for user
+router.patch('/updateProfile', authController.authorize, userController.updateProfile);
+router.patch('/suspendProfile', authController.authorize, userController.suspendProfile);
+router.get('/getProfile', authController.authorize, userController.getProfile);
 
+// user data routes for admin
+router.route('/').get(userController.getAllUsers).post(userController.createUser);
 router
     .route('/:id')
     .get(userController.getUser)
