@@ -1,5 +1,6 @@
 const lodash = require('lodash');
 const mongoose = require('mongoose');
+const User = require('./userModel');
 
 const tourSchema = new mongoose.Schema(
     {
@@ -72,6 +73,40 @@ const tourSchema = new mongoose.Schema(
             select: false, // Hide this field from the output
         },
         startDates: [Date],
+        secretTour: {
+            type: Boolean,
+            default: false,
+        },
+        startLocation: {
+            // GeoJSON
+            type: {
+                type: String,
+                default: 'Point',
+                enum: ['Point'],
+            },
+            coordinates: [Number],
+            address: String,
+            description: String,
+        },
+        locations: [
+            {
+                type: {
+                    type: String,
+                    default: 'Point',
+                    enum: ['Point'],
+                },
+                coordinates: [Number],
+                address: String,
+                description: String,
+                day: Number,
+            },
+        ],
+        guides: [
+            {
+                type: mongoose.Schema.ObjectId,
+                ref: 'User',
+            },
+        ],
     },
     {
         // add virtual properties when converting to JSON or Object
@@ -92,10 +127,23 @@ tourSchema.pre('save', function (next) {
     this.slugName = lodash.kebabCase(this.name);
     next();
 });
+// only need for embedding not referencing
+tourSchema.pre('save', async function (next) {
+    const guidesPromises = this.guides.map(async (id) => await User.findById(id));
+    this.guides = await Promise.all(guidesPromises);
+    next();
+});
 
 // query middleware: runs before find(), findOne(), findOneAndUpdate(), etc.
 tourSchema.pre(/^find/, function (next) {
     this.find({ secretTour: { $ne: true } });
+    next();
+});
+tourSchema.pre(/^find/, function (next) {
+    this.populate({
+        path: 'guides',
+        select: 'name email',
+    });
     next();
 });
 
