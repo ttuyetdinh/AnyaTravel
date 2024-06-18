@@ -7,6 +7,7 @@ const hpp = require('hpp');
 const AppError = require('./utils/appError');
 const userRouter = require('./routes/userRoute');
 const tourRouter = require('./routes/tourRoute');
+const reviewRouter = require('./routes/reviewRoute');
 const { globalErrorHandler } = require('./controllers/errorController');
 
 const { limiterConfig } = require('./configurations/ipLimitConfiguration');
@@ -41,6 +42,7 @@ app.use(xss());
 // Routes
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/reviews', reviewRouter);
 
 // Route for undefined routes
 app.all('*', (req, res, next) => {

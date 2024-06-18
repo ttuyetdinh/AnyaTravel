@@ -1,6 +1,5 @@
 const lodash = require('lodash');
 const mongoose = require('mongoose');
-const User = require('./userModel');
 
 const tourSchema = new mongoose.Schema(
     {
@@ -122,17 +121,24 @@ tourSchema.virtual('durationWeeks').get(function () {
     return `${weeks} weeks and ${days} days`;
 });
 
+// Mongoose does not populate virtual by default, need to specify it in populate()
+tourSchema.virtual('reviews', {
+    ref: 'Review',
+    foreignField: 'tour',
+    localField: '_id',
+});
+
 // document middleware: runs before .save(), .validate(), remove(), init()
 tourSchema.pre('save', function (next) {
     this.slugName = lodash.kebabCase(this.name);
     next();
 });
 // only need for embedding not referencing
-tourSchema.pre('save', async function (next) {
-    const guidesPromises = this.guides.map(async (id) => await User.findById(id));
-    this.guides = await Promise.all(guidesPromises);
-    next();
-});
+// tourSchema.pre('save', async function (next) {
+//     const guidesPromises = this.guides.map(async (id) => await User.findById(id));
+//     this.guides = await Promise.all(guidesPromises);
+//     next();
+// });
 
 // query middleware: runs before find(), findOne(), findOneAndUpdate(), etc.
 tourSchema.pre(/^find/, function (next) {

@@ -53,6 +53,9 @@ const userSchema = new mongoose.Schema({
         default: true,
         select: false,
     },
+    role: {
+        type: String,
+    },
 });
 
 // db middleware to hash the password before saving it to the database
