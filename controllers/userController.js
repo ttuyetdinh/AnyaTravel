@@ -1,6 +1,7 @@
 const User = require('../models/userModel');
 const wrapperAsync = require('../utils/wrapperAsync');
 const tools = require('../utils/tools');
+const factory = require('./controllerFactory');
 
 //  -----------------------user routes-----------------------
 exports.getProfile = wrapperAsync(async (req, res) => {
@@ -41,50 +42,14 @@ exports.suspendProfile = wrapperAsync(async (req, res) => {
     });
 });
 
-//  -----------------------admin routes-----------------------
-exports.getAllUsers = wrapperAsync(async (req, res) => {
-    const users = await User.find();
+//  -----------------------admin routes----------------------------
 
-    res.status(200).json({
-        status: 'success',
-        data: {
-            users: users,
-        },
-    });
-});
+exports.getUser = factory.getOne(User);
 
-exports.createUser = (req, res) => {
-    res.status(200).json({
-        status: 'success',
-        data: {
-            user: 'will create new user',
-        },
-    });
-};
+exports.getAllUsers = factory.getAll(User);
 
-exports.getUser = (req, res) => {
-    res.status(200).json({
-        status: 'success',
-        data: {
-            user: 'will return user',
-        },
-    });
-};
+exports.createUser = factory.createOne(User);
 
-exports.updateUser = (req, res) => {
-    res.status(200).json({
-        status: 'success',
-        data: {
-            user: 'will update user',
-        },
-    });
-};
+exports.updateUser = factory.updateOne(User);
 
-exports.deleteUser = (req, res) => {
-    res.status(200).json({
-        status: 'success',
-        data: {
-            user: 'will delete user',
-        },
-    });
-};
+exports.deleteUser = factory.deleteOne(User);
