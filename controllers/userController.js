@@ -3,26 +3,22 @@ const wrapperAsync = require('../utils/wrapperAsync');
 const tools = require('../utils/tools');
 const factory = require('./controllerFactory');
 
+// middleware
+exports.setMe = (req, res, next) => {
+    req.params.id = req.user.id;
+    next();
+};
+
 //  -----------------------user routes-----------------------
-exports.getProfile = wrapperAsync(async (req, res) => {
-    const user = await User.findById(req.user.id);
 
-    const filteredUser = tools.filterFields(user.toObject(), ['name', 'email', 'photo'], 'include', true);
+exports.getProfile = factory.getOne(User, null, ['name', 'email', 'photo'], 'include', false);
 
-    res.status(200).json({
-        status: 'success',
-        data: {
-            user: filteredUser,
-        },
-    });
-});
 exports.updateProfile = wrapperAsync(async (req, res) => {
-    const filteredBody = tools.filterFields(req.body, ['name', 'email', 'photo']);
+    const filteredBody = tools.filterFields(req.body, ['name', 'email', 'photo'], false);
 
     const user = await User.findById(req.user.id);
     Object.assign(user, filteredBody);
     await user.save({ validateModifiedOnly: true });
-
     res.status(200).json({
         status: 'success',
         data: {

@@ -1,42 +1,54 @@
 const wrapperAsync = require('../utils/wrapperAsync');
 const AppError = require('../utils/appError');
 const APIQuery = require('../utils/APIQuery');
+const tools = require('../utils/tools');
 
-exports.getOne = (Model, populateOptions) =>
+exports.getOne = (Model, populateOptions, filterOptions, filterType, includeId) =>
     wrapperAsync(async (req, res, next) => {
         let query = Model.findById(req.params.id);
-        if (populateOptions) query = query.populate(populateOptions);
-        const doc = await query;
-        const collectionName = getCollectionName(Model);
 
-        if (!doc) {
+        if (populateOptions) query = query.populate(populateOptions);
+
+        const collectionName = getCollectionName(Model);
+        const docs = await query;
+
+        if (!docs) {
             return next(new AppError(`No ${collectionName} found with that ID`, 404));
         }
 
+        const filterDoc = tools.filterFields(docs.toObject(), filterOptions, filterType, includeId);
+
         res.status(200).json({
             status: 'success',
+            results: filterDoc.length,
             data: {
-                [collectionName]: doc,
+                [collectionName]: filterDoc,
             },
         });
     });
 
-exports.getAll = (Model) =>
+exports.getAll = (Model, filterOptions, filterType, includeId) =>
     wrapperAsync(async (req, res) => {
         // To allow for nested GET reviews on tour
         let filter = {};
         if (req.params.tourId) filter = { tour: req.params.tourId };
-
-        const apiQuery = new APIQuery(Model.find(filter), req.query).filter().sort().limitFields().paginate();
-        const docs = await apiQuery.query;
-
         const collectionName = getCollectionName(Model);
+
+        const apiQuery = new APIQuery(Model.find(filter), req.query)
+            .filter()
+            .populate()
+            .sort()
+            .limitFields()
+            .paginate();
+
+        const docs = await apiQuery.query;
+        const filterDocs = docs.map((doc) => tools.filterFields(doc.toObject(), filterOptions, filterType, includeId));
 
         res.status(200).json({
             status: 'success',
-            results: docs.length,
+            results: filterDocs.length,
             data: {
-                [collectionName]: docs,
+                [collectionName]: filterDocs,
             },
         });
     });

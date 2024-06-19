@@ -14,7 +14,7 @@ router.patch('/updatePassword', authController.authorize, authController.updateP
 //user data routes for user
 router.patch('/updateProfile', authController.authorize, userController.updateProfile);
 router.patch('/suspendProfile', authController.authorize, userController.suspendProfile);
-router.get('/getProfile', authController.authorize, userController.getProfile);
+router.get('/getProfile', authController.authorize, userController.setMe, userController.getProfile);
 
 // user data routes for admin
 router.route('/').get(userController.getAllUsers).post(userController.createUser);

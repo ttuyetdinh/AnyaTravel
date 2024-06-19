@@ -20,6 +20,14 @@ class APIQuery {
         return this;
     }
 
+    populate() {
+        if (this.queryObj.populate) {
+            this.query = this.query.populate(this.queryObj.populate);
+        }
+
+        return this;
+    }
+
     sort() {
         if (this.queryObj.sort) {
             const sortBy = this.queryObj.sort.split(',').join(' ');
