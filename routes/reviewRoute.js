@@ -6,20 +6,17 @@ const authController = require('../controllers/authController');
 
 // crud /tour/234fad4/reviews
 // crud /reviews
+router.use(authController.authorize);
+
 router
     .route('/')
     .get(reviewController.getAllReviews)
-    .post(
-        authController.authorize,
-        authController.restrictTo('user', 'admin'),
-        reviewController.setTourUserIds,
-        reviewController.createReview,
-    );
+    .post(authController.restrictTo('user', 'admin'), reviewController.setTourUserIds, reviewController.createReview);
 
 router
     .route('/:id')
     .get(reviewController.getReview)
-    .patch(authController.authorize, authController.restrictTo('user', 'admin'), reviewController.updateReview)
-    .delete(authController.authorize, authController.restrictTo('user', 'admin'), reviewController.deleteReview);
+    .patch(authController.restrictTo('user', 'admin'), reviewController.updateReview)
+    .delete(authController.restrictTo('user', 'admin'), reviewController.deleteReview);
 
 module.exports = router;

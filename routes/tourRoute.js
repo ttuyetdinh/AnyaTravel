@@ -13,12 +13,15 @@ router.route('/tour-stats').get(tourController.getToursStats);
 router.route('/top-5-cheap').get(tourController.aliasTopTours, tourController.getAllTours);
 router.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
 
-router.route('/').get(authController.authorize, tourController.getAllTours).post(tourController.createTour);
+router
+    .route('/')
+    .get(authController.authorize, tourController.getAllTours)
+    .post(authController.authorize, authController.restrictTo('admin', 'lead-guide'), tourController.createTour);
 
 router
     .route('/:id')
     .get(tourController.getTour)
-    .patch(tourController.updateTour)
-    .delete(authController.authorize, authController.restrictTo('admin', 'user'), tourController.deleteTour);
+    .patch(authController.authorize, authController.restrictTo('admin', 'lead-guide'), tourController.updateTour)
+    .delete(authController.authorize, authController.restrictTo('admin', 'lead-guide'), tourController.deleteTour);
 
 module.exports = router;
