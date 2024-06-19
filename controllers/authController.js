@@ -176,7 +176,7 @@ exports.authorize = wrapperAsync(async (req, res, next) => {
 // middleware to restrict access to certain roles
 exports.restrictTo = (...roles) => {
     return (req, res, next) => {
-        if (!roles.includes(req.user.role)) {
+        if (!checkIfRoleExist(roles, req.user.role)) {
             return next(new AppError('You do not have permission to perform this action', 403));
         }
         next();
@@ -195,6 +195,10 @@ function jwtCookieOption() {
         secure: true,
         httpOnly: process.env.NODE_ENV === 'production' ? true : false,
     };
+}
+
+function checkIfRoleExist(grantedRoles, requestRoles) {
+    return requestRoles.some((role) => grantedRoles.includes(role));
 }
 
 // ----------------------- Different approach -----------------------//
