@@ -114,6 +114,9 @@ const tourSchema = new mongoose.Schema(
     },
 );
 
+// Optimizing query performance with indexes
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+
 // Virtual properties
 tourSchema.virtual('durationWeeks').get(function () {
     const weeks = Math.trunc(this.duration / 7);
