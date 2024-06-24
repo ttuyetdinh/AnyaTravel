@@ -97,6 +97,73 @@ exports.getMonthlyPlan = wrapperAsync(async (req, res) => {
     });
 });
 
+// /tours-within/:distance/center/:latlng/unit/:unit
+// /tours-within/233/center/34.111745,-118.113491/unit/km
+exports.getToursWithin = wrapperAsync(async (req, res, next) => {
+    const { distance, latlng, unit } = req.params;
+    const [lat, lng] = latlng.split(',');
+
+    // radius of the earth in miles and km (in radians unit)
+    const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1;
+
+    if (!lat || !lng) {
+        return next(new AppError('Please provide latitude and longitude in the format lat,lng.', 400));
+    }
+
+    const tours = await Tour.find({
+        startLocation: {
+            $geoWithin: {
+                $centerSphere: [[lng, lat], radius],
+            },
+        },
+    });
+
+    res.status(200).json({
+        status: 'success',
+        results: tours.length,
+        data: {
+            tours: tours,
+        },
+    });
+});
+
+// /distances/:latlng/unit/:unit
+// /distances/34.111745,-118.113491/unit/km
+exports.getDistances = wrapperAsync(async (req, res, next) => {
+    const { latlng, unit } = req.params;
+    const [lat, lng] = latlng.split(',');
+
+    // default calculated value is in meters so need to convert to km or miles
+    const multiplier = unit === 'mi' ? 0.000621371 : 0.001;
+
+    if (!lat || !lng) {
+        return next(new AppError('Please provide latitude and longitude in the format lat,lng.', 400));
+    }
+
+    // to úse $geoNear, the field must be indexed with 2dsphere
+    const distances = await Tour.aggregate([
+        {
+            $geoNear: {
+                near: {
+                    type: 'Point',
+                    coordinates: [lng * 1, lat * 1],
+                },
+                distanceField: 'distance',
+                distanceMultiplier: multiplier,
+                spherical: true, // calculate distance on a sphere for exact distance in large distance
+            },
+        },
+    ]);
+
+    res.status(200).json({
+        status: 'success',
+        results: distances.length,
+        data: {
+            distances: distances,
+        },
+    });
+});
+
 exports.getTour = factory.getOne(Tour, { path: 'reviews' });
 
 exports.getAllTours = factory.getAll(Tour);

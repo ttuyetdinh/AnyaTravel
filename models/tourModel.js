@@ -33,6 +33,7 @@ const tourSchema = new mongoose.Schema(
             default: 4.5,
             min: [1, 'Rating must be above 1.0'],
             max: [5, 'Rating must be below 5.0'],
+            get: (val) => Math.round(val * 10) / 10, // 4.6666 -> 46.666 -> 47 -> 4.7
         },
         ratingsQuantity: {
             type: Number,
@@ -77,7 +78,7 @@ const tourSchema = new mongoose.Schema(
             default: false,
         },
         startLocation: {
-            // GeoJSON
+            // Line 82-83: GeoJSON type
             type: {
                 type: String,
                 default: 'Point',
@@ -109,13 +110,15 @@ const tourSchema = new mongoose.Schema(
     },
     {
         // add virtual properties when converting to JSON or Object
-        toJSON: { virtuals: true },
-        toObject: { virtuals: true },
+        // add getters when converting to JSON or Object
+        toJSON: { virtuals: true, getters: true },
+        toObject: { virtuals: true, getters: true },
     },
 );
 
 // Optimizing query performance with indexes
 tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ startLocation: '2dsphere' });
 
 // Virtual properties
 tourSchema.virtual('durationWeeks').get(function () {

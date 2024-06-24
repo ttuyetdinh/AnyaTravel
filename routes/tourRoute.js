@@ -12,6 +12,9 @@ router.use('/:tourId/reviews', reviewRouter);
 router.route('/tour-stats').get(tourController.getToursStats);
 router.route('/top-5-cheap').get(tourController.aliasTopTours, tourController.getAllTours);
 router.route('/monthly-plan/:year').get(tourController.getMonthlyPlan);
+// work with geospatial data
+router.route('/tours-within/:distance/center/:latlng/unit/:unit').get(tourController.getToursWithin);
+router.route('/distances/:latlng/unit/:unit').get(tourController.getDistances);
 
 router
     .route('/')

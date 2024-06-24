@@ -33,6 +33,9 @@ const reviewSchema = new mongoose.Schema(
     },
 );
 
+// COmpound index to optimize the query and prevent duplicate reviews
+reviewSchema.index({ tour: 1, user: 1 }, { unique: true });
+
 // static method
 reviewSchema.statics.calcAverageRatings = async function (tourId) {
     const stat = await this.aggregate([
